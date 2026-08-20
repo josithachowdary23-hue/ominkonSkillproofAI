@@ -1,0 +1,25 @@
+{
+  "task": "Sample Practical Task",
+  "criteria": [
+    {
+      "id": "C1",
+      "name": "Safety Preparation",
+      "description": "Required safety equipment and preparation are demonstrated."
+    },
+    {
+      "id": "C2",
+      "name": "Tool Preparation",
+      "description": "Required tools are prepared before starting the task."
+    },
+    {
+      "id": "C3",
+      "name": "Task Sequence",
+      "description": "Required task steps are performed in the expected sequence."
+    },
+    {
+      "id": "C4",
+      "name": "Procedure Execution",
+      "description": "Observable actions follow the defined task procedure."
+    }
+  ]
+}
