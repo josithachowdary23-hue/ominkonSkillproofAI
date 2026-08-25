@@ -1,39 +1,32 @@
-# MVP Practical Task
-
-## Task
-Correct Handwashing Procedure
-
-## Task ID
-HANDWASH_001
-
-## Objective
-The learner demonstrates a predefined handwashing procedure while being recorded using a smartphone camera.
-
-## Expected Procedure
-
-1. Position both hands to begin the procedure.
-2. Rub both palms together.
-3. Rub the back of each hand.
-4. Rub hands with fingers interlaced.
-5. Complete the handwashing sequence.
-
-## Assessment Method
-
-SkillProof AI analyzes the recorded video for observable actions.
-
-Detected observations are linked to the task rubric and represented using:
-
-- Criterion
-- Video timestamp
-- Confidence score
-- Detection status
-
-The trainer reviews the AI-generated evidence and can confirm or override each observation.
-
-## MVP Scope
-
-The MVP evaluates only the "Correct Handwashing Procedure" task.
-
-The initial prototype will use controlled sample videos recorded by the team.
-
-AI observations are treated as assessment assistance and not as the final certification decision.
+{
+  "task": "Basic Package Preparation and Sealing Procedure",
+  "task_id": "PACKAGE_001",
+  "description": "Assessment of observable steps performed during a basic package preparation and sealing procedure.",
+  "criteria": [
+    {
+      "id": "C1",
+      "name": "Package Preparation",
+      "description": "Learner prepares the package or box before placing the item."
+    },
+    {
+      "id": "C2",
+      "name": "Item Preparation",
+      "description": "Learner has the item ready for packaging."
+    },
+    {
+      "id": "C3",
+      "name": "Item Placement",
+      "description": "Learner places the item inside the package."
+    },
+    {
+      "id": "C4",
+      "name": "Package Closure",
+      "description": "Learner closes the package after placing the item."
+    },
+    {
+      "id": "C5",
+      "name": "Package Sealing",
+      "description": "Learner applies sealing material to complete the package."
+    }
+  ]
+}

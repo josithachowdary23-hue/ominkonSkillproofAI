@@ -1,43 +1,59 @@
 # Sample Video Plan
 
 ## Task
-Correct Handwashing Procedure
+Basic Package Preparation and Sealing Procedure
 
 ## Purpose
+
 Controlled sample videos will be used to develop and test the SkillProof AI MVP.
+
+## Required Materials
+
+- Small cardboard box or similar package
+- One small safe object to package
+- Tape
 
 ## Planned Videos
 
 ### Video 1 — Correct Procedure
-The learner performs all five required steps in the expected order.
+
+The learner performs all required steps in the expected order:
+
+1. Prepares the box.
+2. Prepares the item.
+3. Places the item inside.
+4. Closes the box.
+5. Seals the box with tape.
 
 Expected result:
-All rubric criteria should be identified as demonstrated.
+All rubric criteria should be identified as demonstrated or presented to the trainer with supporting evidence.
 
-### Video 2 — Missing Step
-The learner performs the procedure but skips the back-of-hand rubbing step.
+### Video 2 — Missing Sealing Step
 
-Expected result:
-C3 should be flagged for trainer review.
-
-### Video 3 — Incorrect Sequence
-The learner performs the main actions but changes the expected sequence.
+The learner prepares the package, places the item inside and closes the box, but does not seal it.
 
 Expected result:
-The sequence should be flagged for trainer review.
+C5 — Package Sealing should be flagged as missing or requiring trainer review.
+
+### Video 3 — Incorrect Procedure
+
+The learner performs the packaging task but skips or changes one of the expected steps.
+
+Expected result:
+The affected criterion should be flagged for trainer review.
 
 ## Recording Setup
 
 - Smartphone camera
 - One learner visible
-- Hands clearly visible
-- Camera remains approximately stationary
+- Package, item and learner's hands clearly visible
+- Camera remains stationary
 - Good lighting
 - Minimal background obstruction
 - Short video duration
 
 ## MVP Dataset
 
-The prototype initially uses team-recorded controlled videos.
+The prototype initially uses controlled videos recorded by the team.
 
-These videos are for prototype development and demonstration only.
+These videos are used only for prototype development, testing and demonstration.

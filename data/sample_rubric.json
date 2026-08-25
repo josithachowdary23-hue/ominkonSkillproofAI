@@ -1,32 +1,32 @@
 {
-  "task": "Correct Handwashing Procedure",
-  "task_id": "HANDWASH_001",
-  "description": "Assessment of observable steps performed during a standard handwashing procedure.",
+  "task": "Basic Package Preparation and Sealing Procedure",
+  "task_id": "PACKAGE_001",
+  "description": "Assessment of observable steps performed during a basic package preparation and sealing procedure.",
   "criteria": [
     {
       "id": "C1",
-      "name": "Hand Preparation",
-      "description": "Learner positions both hands appropriately to begin the handwashing procedure."
+      "name": "Package Preparation",
+      "description": "Learner prepares the package or box before placing the item."
     },
     {
       "id": "C2",
-      "name": "Palm Rubbing",
-      "description": "Learner rubs both palms together."
+      "name": "Item Preparation",
+      "description": "Learner has the item ready for packaging."
     },
     {
       "id": "C3",
-      "name": "Back of Hand Rubbing",
-      "description": "Learner rubs the back of each hand."
+      "name": "Item Placement",
+      "description": "Learner places the item inside the package."
     },
     {
       "id": "C4",
-      "name": "Interlaced Finger Rubbing",
-      "description": "Learner rubs hands with fingers interlaced."
+      "name": "Package Closure",
+      "description": "Learner closes the package after placing the item."
     },
     {
       "id": "C5",
-      "name": "Procedure Completion",
-      "description": "Learner completes the defined handwashing sequence."
+      "name": "Package Sealing",
+      "description": "Learner applies sealing material to complete the package."
     }
   ]
 }
