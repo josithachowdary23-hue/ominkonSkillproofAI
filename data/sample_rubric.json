@@ -1,25 +1,32 @@
 {
-  "task": "Sample Practical Task",
+  "task": "Correct Handwashing Procedure",
+  "task_id": "HANDWASH_001",
+  "description": "Assessment of observable steps performed during a standard handwashing procedure.",
   "criteria": [
     {
       "id": "C1",
-      "name": "Safety Preparation",
-      "description": "Required safety equipment and preparation are demonstrated."
+      "name": "Hand Preparation",
+      "description": "Learner positions both hands appropriately to begin the handwashing procedure."
     },
     {
       "id": "C2",
-      "name": "Tool Preparation",
-      "description": "Required tools are prepared before starting the task."
+      "name": "Palm Rubbing",
+      "description": "Learner rubs both palms together."
     },
     {
       "id": "C3",
-      "name": "Task Sequence",
-      "description": "Required task steps are performed in the expected sequence."
+      "name": "Back of Hand Rubbing",
+      "description": "Learner rubs the back of each hand."
     },
     {
       "id": "C4",
-      "name": "Procedure Execution",
-      "description": "Observable actions follow the defined task procedure."
+      "name": "Interlaced Finger Rubbing",
+      "description": "Learner rubs hands with fingers interlaced."
+    },
+    {
+      "id": "C5",
+      "name": "Procedure Completion",
+      "description": "Learner completes the defined handwashing sequence."
     }
   ]
 }
