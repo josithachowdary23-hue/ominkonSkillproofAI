@@ -1,122 +1,177 @@
-import { useState } from 'react'
-import heroImg from './assets/hero.png'
-import reactLogo from './assets/react.svg'
-import viteLogo from './assets/vite.svg'
-import './App.css'
+import { useState } from 'react';
+import './App.css';
 
 function App() {
-  const [count, setCount] = useState(0)
+  const [selectedVideo, setSelectedVideo] = useState(null);
+  const [videoPreview, setVideoPreview] = useState(null);
+  const [isAnalyzing, setIsAnalyzing] = useState(false);
+  const [analysisComplete, setIsAnalysisComplete] = useState(false);
+
+  const rubricCriteria = [
+    {
+      id: 'C1',
+      name: 'Package Preparation',
+      desc: 'Prepare package or box before placing item'
+    },
+    {
+      id: 'C2',
+      name: 'Item Preparation',
+      desc: 'Item is ready for packaging'
+    },
+    {
+      id: 'C3',
+      name: 'Item Placement',
+      desc: 'Place item inside package'
+    },
+    {
+      id: 'C4',
+      name: 'Package Closure',
+      desc: 'Close package after placing item'
+    },
+    {
+      id: 'C5',
+      name: 'Package Sealing',
+      desc: 'Apply sealing material to complete'
+    }
+  ];
+
+  const handleVideoChange = (event) => {
+    const file = event.target.files[0];
+
+    if (file) {
+      setSelectedVideo(file);
+      setVideoPreview(URL.createObjectURL(file));
+      setIsAnalysisComplete(false);
+    }
+  };
+
+  const handleAnalyze = () => {
+    if (!selectedVideo) {
+      return;
+    }
+
+    setIsAnalyzing(true);
+
+    // Temporary frontend simulation.
+    // This will be connected to the FastAPI backend later.
+    setTimeout(() => {
+      setIsAnalyzing(false);
+      setIsAnalysisComplete(true);
+    }, 2000);
+  };
 
   return (
-    <>
-      <section id="center">
-        <div className="hero">
-          <img src={heroImg} className="base" width="170" height="179" alt="" />
-          <img src={reactLogo} className="framework" alt="React logo" />
-          <img src={viteLogo} className="vite" alt="Vite logo" />
-        </div>
-        <div>
-          <h1>Get started</h1>
-          <p>
-            Edit <code>src/App.jsx</code> and save to test <code>HMR</code>
+    <div className="app-container">
+      <header className="header">
+        <div className="logo-badge">SkillProof AI</div>
+        <p className="subtitle">
+          AI-Assisted Evidence-Linked Practical Skill Assessment
+        </p>
+      </header>
+
+      <main className="main-content">
+        <section className="card">
+          <div className="task-header">
+            <span className="badge">TASK #PACKAGE_001</span>
+
+            <h2>Basic Package Preparation and Sealing Procedure</h2>
+
+            <p className="task-desc">
+              Demonstrate the standard package preparation, item placement,
+              closure, and sealing steps.
+            </p>
+          </div>
+
+          <div className="upload-section">
+            <label className="upload-box">
+              <input
+                type="file"
+                accept="video/*"
+                onChange={handleVideoChange}
+                style={{ display: 'none' }}
+              />
+
+              <div className="upload-content">
+                <span className="upload-icon">📹</span>
+
+                <p>
+                  <strong>
+                    {selectedVideo
+                      ? selectedVideo.name
+                      : 'Click to select or upload performance video'}
+                  </strong>
+                </p>
+
+                <span className="upload-hint">
+                  MP4, WebM or MOV format
+                </span>
+              </div>
+            </label>
+          </div>
+
+          {videoPreview && (
+            <div className="preview-section">
+              <h3>Video Preview</h3>
+
+              <video
+                src={videoPreview}
+                controls
+                className="video-player"
+              />
+
+              <button
+                className="btn-primary"
+                onClick={handleAnalyze}
+                disabled={isAnalyzing}
+              >
+                {isAnalyzing
+                  ? 'Preparing prototype analysis...'
+                  : 'Analyze Performance'}
+              </button>
+            </div>
+          )}
+        </section>
+
+        <section className="card">
+          <h3>Task Competency Rubric</h3>
+
+          <p className="rubric-hint">
+            Competency criteria for this practical assessment:
           </p>
-        </div>
-        <button
-          type="button"
-          className="counter"
-          onClick={() => setCount((count) => count + 1)}
-        >
-          Count is {count}
-        </button>
-      </section>
 
-      <div className="ticks"></div>
+          <div className="rubric-list">
+            {rubricCriteria.map((item) => (
+              <div key={item.id} className="rubric-item">
+                <div className="rubric-id">{item.id}</div>
 
-      <section id="next-steps">
-        <div id="docs">
-          <svg className="icon" role="presentation" aria-hidden="true">
-            <use href="/icons.svg#documentation-icon"></use>
-          </svg>
-          <h2>Documentation</h2>
-          <p>Your questions, answered</p>
-          <ul>
-            <li>
-              <a href="https://vite.dev/" target="_blank">
-                <img className="logo" src={viteLogo} alt="" />
-                Explore Vite
-              </a>
-            </li>
-            <li>
-              <a href="https://react.dev/" target="_blank">
-                <img className="button-icon" src={reactLogo} alt="" />
-                Learn more
-              </a>
-            </li>
-          </ul>
-        </div>
-        <div id="social">
-          <svg className="icon" role="presentation" aria-hidden="true">
-            <use href="/icons.svg#social-icon"></use>
-          </svg>
-          <h2>Connect with us</h2>
-          <p>Join the Vite community</p>
-          <ul>
-            <li>
-              <a href="https://github.com/vitejs/vite" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#github-icon"></use>
-                </svg>
-                GitHub
-              </a>
-            </li>
-            <li>
-              <a href="https://chat.vite.dev/" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#discord-icon"></use>
-                </svg>
-                Discord
-              </a>
-            </li>
-            <li>
-              <a href="https://x.com/vite_js" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#x-icon"></use>
-                </svg>
-                X.com
-              </a>
-            </li>
-            <li>
-              <a href="https://bsky.app/profile/vite.dev" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#bluesky-icon"></use>
-                </svg>
-                Bluesky
-              </a>
-            </li>
-          </ul>
-        </div>
-      </section>
+                <div className="rubric-info">
+                  <strong>{item.name}</strong>
+                  <p>{item.desc}</p>
+                </div>
 
-      <div className="ticks"></div>
-      <section id="spacer"></section>
-    </>
-  )
+                {analysisComplete && (
+                  <span className="status-badge status-detected">
+                    Ready for Review
+                  </span>
+                )}
+              </div>
+            ))}
+          </div>
+
+          {analysisComplete && (
+            <div className="analysis-summary">
+              <h4>✅ Prototype Analysis Complete</h4>
+
+              <p>
+                Task criteria loaded. Backend evidence analysis will be
+                connected in the next development stage.
+              </p>
+            </div>
+          )}
+        </section>
+      </main>
+    </div>
+  );
 }
 
-export default App
+export default App;
