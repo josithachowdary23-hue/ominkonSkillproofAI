@@ -5,7 +5,8 @@ function App() {
   const [selectedVideo, setSelectedVideo] = useState(null);
   const [videoPreview, setVideoPreview] = useState(null);
   const [isAnalyzing, setIsAnalyzing] = useState(false);
-  const [analysisComplete, setIsAnalysisComplete] = useState(false);
+  const [uploadResult, setUploadResult] = useState(null);
+  const [error, setError] = useState('');
 
   const rubricCriteria = [
     {
@@ -41,29 +42,51 @@ function App() {
     if (file) {
       setSelectedVideo(file);
       setVideoPreview(URL.createObjectURL(file));
-      setIsAnalysisComplete(false);
+      setUploadResult(null);
+      setError('');
     }
   };
 
-  const handleAnalyze = () => {
+  const handleAnalyze = async () => {
     if (!selectedVideo) {
       return;
     }
 
     setIsAnalyzing(true);
+    setError('');
+    setUploadResult(null);
 
-    // Temporary frontend simulation.
-    // This will be connected to the FastAPI backend later.
-    setTimeout(() => {
+    const formData = new FormData();
+    formData.append('video', selectedVideo);
+
+    try {
+      const response = await fetch('http://127.0.0.1:8000/upload', {
+        method: 'POST',
+        body: formData
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.detail || 'Video upload failed.');
+      }
+
+      setUploadResult(data);
+    } catch (err) {
+      setError(
+        err.message ||
+          'Could not connect to the SkillProof backend. Please try again.'
+      );
+    } finally {
       setIsAnalyzing(false);
-      setIsAnalysisComplete(true);
-    }, 2000);
+    }
   };
 
   return (
     <div className="app-container">
       <header className="header">
         <div className="logo-badge">SkillProof AI</div>
+
         <p className="subtitle">
           AI-Assisted Evidence-Linked Practical Skill Assessment
         </p>
@@ -74,7 +97,9 @@ function App() {
           <div className="task-header">
             <span className="badge">TASK #PACKAGE_001</span>
 
-            <h2>Basic Package Preparation and Sealing Procedure</h2>
+            <h2>
+              Basic Package Preparation and Sealing Procedure
+            </h2>
 
             <p className="task-desc">
               Demonstrate the standard package preparation, item placement,
@@ -86,7 +111,7 @@ function App() {
             <label className="upload-box">
               <input
                 type="file"
-                accept="video/*"
+                accept="video/mp4,video/webm,video/quicktime"
                 onChange={handleVideoChange}
                 style={{ display: 'none' }}
               />
@@ -125,9 +150,37 @@ function App() {
                 disabled={isAnalyzing}
               >
                 {isAnalyzing
-                  ? 'Preparing prototype analysis...'
-                  : 'Analyze Performance'}
+                  ? 'Uploading video to SkillProof...'
+                  : 'Submit for Analysis'}
               </button>
+            </div>
+          )}
+
+          {error && (
+            <div className="error-message">
+              <strong>Upload failed</strong>
+              <p>{error}</p>
+            </div>
+          )}
+
+          {uploadResult && (
+            <div className="analysis-summary">
+              <h4>✅ Video Received by SkillProof</h4>
+
+              <p>
+                <strong>Assessment ID:</strong>{' '}
+                {uploadResult.assessment_id}
+              </p>
+
+              <p>
+                <strong>File:</strong>{' '}
+                {uploadResult.original_filename}
+              </p>
+
+              <p>
+                The video was successfully stored by the backend.
+                Evidence analysis is the next processing stage.
+              </p>
             </div>
           )}
         </section>
@@ -141,33 +194,27 @@ function App() {
 
           <div className="rubric-list">
             {rubricCriteria.map((item) => (
-              <div key={item.id} className="rubric-item">
-                <div className="rubric-id">{item.id}</div>
+              <div
+                key={item.id}
+                className="rubric-item"
+              >
+                <div className="rubric-id">
+                  {item.id}
+                </div>
 
                 <div className="rubric-info">
                   <strong>{item.name}</strong>
                   <p>{item.desc}</p>
                 </div>
 
-                {analysisComplete && (
+                {uploadResult && (
                   <span className="status-badge status-detected">
-                    Ready for Review
+                    Awaiting Analysis
                   </span>
                 )}
               </div>
             ))}
           </div>
-
-          {analysisComplete && (
-            <div className="analysis-summary">
-              <h4>✅ Prototype Analysis Complete</h4>
-
-              <p>
-                Task criteria loaded. Backend evidence analysis will be
-                connected in the next development stage.
-              </p>
-            </div>
-          )}
         </section>
       </main>
     </div>
