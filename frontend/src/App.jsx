@@ -60,15 +60,20 @@ function App() {
     formData.append('video', selectedVideo);
 
     try {
-      const response = await fetch('http://127.0.0.1:8000/upload', {
-        method: 'POST',
-        body: formData
-      });
+      const response = await fetch(
+        'http://127.0.0.1:8000/upload',
+        {
+          method: 'POST',
+          body: formData
+        }
+      );
 
       const data = await response.json();
 
       if (!response.ok) {
-        throw new Error(data.detail || 'Video upload failed.');
+        throw new Error(
+          data.detail || 'Video upload failed.'
+        );
       }
 
       setUploadResult(data);
@@ -84,8 +89,12 @@ function App() {
 
   return (
     <div className="app-container">
+
+      {/* HEADER */}
       <header className="header">
-        <div className="logo-badge">SkillProof AI</div>
+        <div className="logo-badge">
+          SkillProof AI
+        </div>
 
         <p className="subtitle">
           AI-Assisted Evidence-Linked Practical Skill Assessment
@@ -93,22 +102,32 @@ function App() {
       </header>
 
       <main className="main-content">
+
+        {/* LEARNER / VIDEO SECTION */}
         <section className="card">
+
           <div className="task-header">
-            <span className="badge">TASK #PACKAGE_001</span>
+
+            <span className="badge">
+              TASK #PACKAGE_001
+            </span>
 
             <h2>
               Basic Package Preparation and Sealing Procedure
             </h2>
 
             <p className="task-desc">
-              Demonstrate the standard package preparation, item placement,
-              closure, and sealing steps.
+              Demonstrate the standard package preparation,
+              item placement, closure, and sealing steps.
             </p>
+
           </div>
 
+          {/* VIDEO UPLOAD */}
           <div className="upload-section">
+
             <label className="upload-box">
+
               <input
                 type="file"
                 accept="video/mp4,video/webm,video/quicktime"
@@ -117,7 +136,10 @@ function App() {
               />
 
               <div className="upload-content">
-                <span className="upload-icon">📹</span>
+
+                <span className="upload-icon">
+                  📹
+                </span>
 
                 <p>
                   <strong>
@@ -130,13 +152,20 @@ function App() {
                 <span className="upload-hint">
                   MP4, WebM or MOV format
                 </span>
+
               </div>
+
             </label>
+
           </div>
 
+          {/* VIDEO PREVIEW */}
           {videoPreview && (
             <div className="preview-section">
-              <h3>Video Preview</h3>
+
+              <h3>
+                Video Preview
+              </h3>
 
               <video
                 src={videoPreview}
@@ -150,73 +179,164 @@ function App() {
                 disabled={isAnalyzing}
               >
                 {isAnalyzing
-                  ? 'Uploading video to SkillProof...'
+                  ? 'Processing Video...'
                   : 'Submit for Analysis'}
               </button>
+
             </div>
           )}
 
+          {/* ERROR */}
           {error && (
             <div className="error-message">
-              <strong>Upload failed</strong>
-              <p>{error}</p>
+
+              <strong>
+                Processing Failed
+              </strong>
+
+              <p>
+                {error}
+              </p>
+
             </div>
           )}
 
+          {/* REAL BACKEND / OPENCV RESULT */}
           {uploadResult && (
             <div className="analysis-summary">
-              <h4>✅ Video Received by SkillProof</h4>
+
+              <h4>
+                ✅ Video Processing Complete
+              </h4>
 
               <p>
-                <strong>Assessment ID:</strong>{' '}
+                <strong>
+                  Assessment ID:
+                </strong>{' '}
                 {uploadResult.assessment_id}
               </p>
 
               <p>
-                <strong>File:</strong>{' '}
+                <strong>
+                  File:
+                </strong>{' '}
                 {uploadResult.original_filename}
               </p>
 
               <p>
-                The video was successfully stored by the backend.
-                Evidence analysis is the next processing stage.
+                <strong>
+                  Processing Status:
+                </strong>{' '}
+                {uploadResult.processing_status}
               </p>
+
+              {uploadResult.video_metadata && (
+                <div className="video-metadata">
+
+                  <p>
+                    <strong>
+                      Duration:
+                    </strong>{' '}
+                    {uploadResult.video_metadata.duration_seconds} seconds
+                  </p>
+
+                  <p>
+                    <strong>
+                      Frame Count:
+                    </strong>{' '}
+                    {uploadResult.video_metadata.frame_count}
+                  </p>
+
+                  <p>
+                    <strong>
+                      FPS:
+                    </strong>{' '}
+                    {uploadResult.video_metadata.fps}
+                  </p>
+
+                  <p>
+                    <strong>
+                      Resolution:
+                    </strong>{' '}
+                    {uploadResult.video_metadata.resolution.width}
+                    {' × '}
+                    {uploadResult.video_metadata.resolution.height}
+                  </p>
+
+                  <p>
+                    <strong>
+                      Evidence Sampling Timestamps:
+                    </strong>{' '}
+                    {uploadResult.video_metadata.sample_timestamps.join(
+                      ', '
+                    )}
+                  </p>
+
+                </div>
+              )}
+
+              <p>
+                Video processing complete. Observable evidence
+                extraction is the next stage.
+              </p>
+
             </div>
           )}
+
         </section>
 
+        {/* RUBRIC SECTION */}
         <section className="card">
-          <h3>Task Competency Rubric</h3>
+
+          <h3>
+            Task Competency Rubric
+          </h3>
 
           <p className="rubric-hint">
             Competency criteria for this practical assessment:
           </p>
 
           <div className="rubric-list">
+
             {rubricCriteria.map((item) => (
+
               <div
                 key={item.id}
                 className="rubric-item"
               >
+
                 <div className="rubric-id">
                   {item.id}
                 </div>
 
                 <div className="rubric-info">
-                  <strong>{item.name}</strong>
-                  <p>{item.desc}</p>
+
+                  <strong>
+                    {item.name}
+                  </strong>
+
+                  <p>
+                    {item.desc}
+                  </p>
+
                 </div>
 
                 {uploadResult && (
                   <span className="status-badge status-detected">
-                    Awaiting Analysis
+                    Awaiting Evidence
                   </span>
                 )}
+
               </div>
+
             ))}
+
           </div>
+
         </section>
+
       </main>
+
     </div>
   );
 }

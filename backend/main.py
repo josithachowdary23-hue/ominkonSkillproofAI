@@ -4,15 +4,16 @@ from uuid import uuid4
 from fastapi import FastAPI, File, HTTPException, UploadFile
 from fastapi.middleware.cors import CORSMiddleware
 
+from video_processor import analyze_video_metadata
+
 
 app = FastAPI(
     title="SkillProof AI API",
     description="Backend API for evidence-linked practical skill assessment.",
-    version="0.2.0",
+    version="0.4.0",
 )
 
 
-# Allow the local React frontend to communicate with FastAPI.
 app.add_middleware(
     CORSMiddleware,
     allow_origins=[
@@ -25,8 +26,21 @@ app.add_middleware(
 )
 
 
+# Folder used to store uploaded learner videos.
 UPLOAD_DIR = Path("uploads")
-UPLOAD_DIR.mkdir(exist_ok=True)
+UPLOAD_DIR.mkdir(
+    parents=True,
+    exist_ok=True
+)
+
+
+# Folder used to store timestamped evidence frames.
+EVIDENCE_DIR = Path("evidence")
+EVIDENCE_DIR.mkdir(
+    parents=True,
+    exist_ok=True
+)
+
 
 ALLOWED_VIDEO_TYPES = {
     "video/mp4",
@@ -40,6 +54,7 @@ def root():
     return {
         "app": "SkillProof AI",
         "status": "running",
+        "version": "0.4.0",
         "message": "Backend API is working",
     }
 
@@ -52,31 +67,78 @@ def health_check():
 
 
 @app.post("/upload")
-async def upload_video(video: UploadFile = File(...)):
+async def upload_video(
+    video: UploadFile = File(...)
+):
+    # Validate MIME type.
     if video.content_type not in ALLOWED_VIDEO_TYPES:
         raise HTTPException(
             status_code=400,
-            detail="Unsupported video format. Please upload MP4, WebM, or MOV.",
+            detail=(
+                "Unsupported video format. "
+                "Please upload MP4, WebM, or MOV."
+            ),
         )
 
-    extension = Path(video.filename or "video.mp4").suffix.lower()
+    # Validate file extension.
+    extension = Path(
+        video.filename or "video.mp4"
+    ).suffix.lower()
 
-    if extension not in {".mp4", ".webm", ".mov"}:
+    if extension not in {
+        ".mp4",
+        ".webm",
+        ".mov"
+    }:
         raise HTTPException(
             status_code=400,
             detail="Invalid video file extension.",
         )
 
-    assessment_id = f"SP-{uuid4().hex[:8].upper()}"
-    stored_filename = f"{assessment_id}{extension}"
-    destination = UPLOAD_DIR / stored_filename
+    # Generate a unique SkillProof assessment ID.
+    assessment_id = (
+        f"SP-{uuid4().hex[:8].upper()}"
+    )
 
+    stored_filename = (
+        f"{assessment_id}{extension}"
+    )
+
+    destination = (
+        UPLOAD_DIR / stored_filename
+    )
+
+    # Save uploaded video.
     try:
-        with destination.open("wb") as output_file:
-            while chunk := await video.read(1024 * 1024):
+        with destination.open(
+            "wb"
+        ) as output_file:
+
+            while chunk := await video.read(
+                1024 * 1024
+            ):
                 output_file.write(chunk)
+
     finally:
         await video.close()
+
+    # Process video using OpenCV.
+    try:
+        video_metadata = analyze_video_metadata(
+            destination,
+            EVIDENCE_DIR,
+            assessment_id
+        )
+
+    except ValueError as error:
+        # Remove invalid video if processing fails.
+        if destination.exists():
+            destination.unlink()
+
+        raise HTTPException(
+            status_code=400,
+            detail=str(error),
+        )
 
     return {
         "success": True,
@@ -84,5 +146,16 @@ async def upload_video(video: UploadFile = File(...)):
         "original_filename": video.filename,
         "stored_filename": stored_filename,
         "content_type": video.content_type,
-        "message": "Video uploaded successfully. Analysis has not started yet.",
+        "processing_status": "evidence_frames_extracted",
+        "video_metadata": video_metadata,
+        "evidence_frame_count": len(
+            video_metadata.get(
+                "evidence_frames",
+                []
+            )
+        ),
+        "message": (
+            "Video uploaded, processed, and "
+            "timestamped evidence frames extracted successfully."
+        ),
     }
