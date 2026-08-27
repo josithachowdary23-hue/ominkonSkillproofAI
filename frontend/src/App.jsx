@@ -8,6 +8,7 @@ function App() {
   const [uploadResult, setUploadResult] = useState(null);
   const [error, setError] = useState('');
   const [trainerDecisions, setTrainerDecisions] = useState({});
+  const [showFinalRecord, setShowFinalRecord] = useState(false);
 
   const rubricCriteria = [
     {
@@ -45,6 +46,7 @@ function App() {
       setVideoPreview(URL.createObjectURL(file));
       setUploadResult(null);
       setTrainerDecisions({});
+      setShowFinalRecord(false);
       setError('');
     }
   };
@@ -58,6 +60,7 @@ function App() {
     setError('');
     setUploadResult(null);
     setTrainerDecisions({});
+    setShowFinalRecord(false);
 
     const formData = new FormData();
     formData.append('video', selectedVideo);
@@ -98,6 +101,8 @@ function App() {
       ...current,
       [criterionId]: decision
     }));
+
+    setShowFinalRecord(false);
   };
 
   const evidenceFrames =
@@ -109,9 +114,36 @@ function App() {
   const completedDecisions =
     Object.keys(trainerDecisions).length;
 
+  const confirmedCount =
+    Object.values(trainerDecisions).filter(
+      (decision) => decision === 'confirmed'
+    ).length;
+
+  const overriddenCount =
+    Object.values(trainerDecisions).filter(
+      (decision) => decision === 'overridden'
+    ).length;
+
   const allCriteriaReviewed =
     reviewEvidence.length > 0 &&
     completedDecisions === reviewEvidence.length;
+
+  const generateFinalRecord = () => {
+    if (!allCriteriaReviewed) {
+      return;
+    }
+
+    setShowFinalRecord(true);
+
+    setTimeout(() => {
+      document
+        .getElementById('verified-record')
+        ?.scrollIntoView({
+          behavior: 'smooth',
+          block: 'start'
+        });
+    }, 100);
+  };
 
   return (
     <div className="app-container">
@@ -128,9 +160,11 @@ function App() {
 
       <main className="main-content">
 
+        {/* LEARNER / VIDEO SECTION */}
         <section className="card">
 
           <div className="task-header">
+
             <span className="badge">
               TASK #PACKAGE_001
             </span>
@@ -144,9 +178,11 @@ function App() {
               SkillProof identifies candidate moments
               for evidence-based trainer review.
             </p>
+
           </div>
 
           <div className="upload-section">
+
             <label className="upload-box">
 
               <input
@@ -177,12 +213,15 @@ function App() {
               </div>
 
             </label>
+
           </div>
 
           {videoPreview && (
             <div className="preview-section">
 
-              <h3>Performance Video</h3>
+              <h3>
+                Performance Video
+              </h3>
 
               <video
                 src={videoPreview}
@@ -205,8 +244,15 @@ function App() {
 
           {error && (
             <div className="error-message">
-              <strong>Processing Failed</strong>
-              <p>{error}</p>
+
+              <strong>
+                Processing Failed
+              </strong>
+
+              <p>
+                {error}
+              </p>
+
             </div>
           )}
 
@@ -218,22 +264,30 @@ function App() {
               </h4>
 
               <p>
-                <strong>Assessment ID:</strong>{' '}
+                <strong>
+                  Assessment ID:
+                </strong>{' '}
                 {uploadResult.assessment_id}
               </p>
 
               <p>
-                <strong>Status:</strong>{' '}
+                <strong>
+                  Status:
+                </strong>{' '}
                 {uploadResult.processing_status}
               </p>
 
               <p>
-                <strong>CV Method:</strong>{' '}
+                <strong>
+                  CV Method:
+                </strong>{' '}
                 OpenCV visual activity detection
               </p>
 
               <p>
-                <strong>Candidate Moments:</strong>{' '}
+                <strong>
+                  Candidate Moments:
+                </strong>{' '}
                 {evidenceFrames.length}
               </p>
 
@@ -248,9 +302,12 @@ function App() {
 
         </section>
 
+        {/* RUBRIC */}
         <section className="card">
 
-          <h3>Task Competency Rubric</h3>
+          <h3>
+            Task Competency Rubric
+          </h3>
 
           <p className="rubric-hint">
             Predefined criteria for this assessment:
@@ -273,12 +330,15 @@ function App() {
                   </div>
 
                   <div className="rubric-info">
+
                     <strong>
                       {item.name}
                     </strong>
+
                     <p>
                       {item.desc}
                     </p>
+
                   </div>
 
                   {decision === 'confirmed' && (
@@ -307,6 +367,7 @@ function App() {
 
         </section>
 
+        {/* CV EVIDENCE TIMELINE */}
         {uploadResult && (
           <section
             className="card"
@@ -320,6 +381,8 @@ function App() {
             <p className="rubric-hint">
               High-activity moments automatically
               identified from the learner&apos;s video.
+              These moments support review but do not
+              independently prove competency.
             </p>
 
             <div className="evidence-timeline">
@@ -337,6 +400,7 @@ function App() {
                     </span>
 
                     <div>
+
                       <strong>
                         Candidate Moment
                       </strong>
@@ -344,6 +408,7 @@ function App() {
                       <p>
                         Timestamp: {frame.timestamp}
                       </p>
+
                     </div>
 
                   </div>
@@ -371,6 +436,7 @@ function App() {
           </section>
         )}
 
+        {/* TRAINER DASHBOARD */}
         {reviewEvidence.length > 0 && (
           <section
             className="card"
@@ -380,6 +446,7 @@ function App() {
             <div className="trainer-header">
 
               <div>
+
                 <h3>
                   Trainer Verification Dashboard
                 </h3>
@@ -388,6 +455,7 @@ function App() {
                   AI/CV suggests moments. The trainer
                   makes the final assessment decision.
                 </p>
+
               </div>
 
               <div className="review-progress">
@@ -420,6 +488,7 @@ function App() {
                       </div>
 
                       <div>
+
                         <h4>
                           {criterion.criterion_name}
                         </h4>
@@ -430,6 +499,7 @@ function App() {
                               .criterion_description
                           }
                         </p>
+
                       </div>
 
                     </div>
@@ -504,12 +574,15 @@ function App() {
                             : 'decision-result overridden'
                         }
                       >
+
                         Trainer Decision:{' '}
+
                         <strong>
                           {decision === 'confirmed'
                             ? 'CONFIRMED'
                             : 'OVERRIDDEN'}
                         </strong>
+
                       </div>
                     )}
 
@@ -538,8 +611,182 @@ function App() {
                   {uploadResult.assessment_id}
                 </p>
 
+                <button
+                  className="btn-primary"
+                  onClick={generateFinalRecord}
+                >
+                  Generate Verified Assessment Record
+                </button>
+
               </div>
             )}
+
+          </section>
+        )}
+
+        {/* FINAL VERIFIED RECORD */}
+        {showFinalRecord && uploadResult && (
+          <section
+            id="verified-record"
+            className="card verified-record"
+            style={{ gridColumn: '1 / -1' }}
+          >
+
+            <div className="verified-record-header">
+
+              <div>
+
+                <span className="verified-label">
+                  TRAINER VERIFIED
+                </span>
+
+                <h2>
+                  Verified Assessment Record
+                </h2>
+
+                <p>
+                  SkillProof AI — Evidence-Linked
+                  Practical Skill Assessment
+                </p>
+
+              </div>
+
+              <div className="verified-mark">
+                ✓
+              </div>
+
+            </div>
+
+            <div className="record-meta">
+
+              <div>
+                <span>
+                  Assessment ID
+                </span>
+                <strong>
+                  {uploadResult.assessment_id}
+                </strong>
+              </div>
+
+              <div>
+                <span>
+                  Task
+                </span>
+                <strong>
+                  {uploadResult.task}
+                </strong>
+              </div>
+
+              <div>
+                <span>
+                  Task ID
+                </span>
+                <strong>
+                  {uploadResult.task_id}
+                </strong>
+              </div>
+
+              <div>
+                <span>
+                  Review Status
+                </span>
+                <strong>
+                  5 / 5 Criteria Reviewed
+                </strong>
+              </div>
+
+            </div>
+
+            <div className="verified-criteria">
+
+              {rubricCriteria.map((criterion) => {
+                const decision =
+                  trainerDecisions[criterion.id];
+
+                return (
+                  <div
+                    className="verified-criterion"
+                    key={criterion.id}
+                  >
+
+                    <div className="verified-criterion-info">
+
+                      <span className="rubric-id">
+                        {criterion.id}
+                      </span>
+
+                      <div>
+
+                        <strong>
+                          {criterion.name}
+                        </strong>
+
+                        <p>
+                          {criterion.desc}
+                        </p>
+
+                      </div>
+
+                    </div>
+
+                    <span
+                      className={
+                        decision === 'confirmed'
+                          ? 'record-result confirmed'
+                          : 'record-result overridden'
+                      }
+                    >
+                      {decision === 'confirmed'
+                        ? '✓ CONFIRMED'
+                        : '✕ OVERRIDDEN'}
+                    </span>
+
+                  </div>
+                );
+              })}
+
+            </div>
+
+            <div className="record-summary">
+
+              <div>
+                <span>
+                  Confirmed
+                </span>
+                <strong>
+                  {confirmedCount}
+                </strong>
+              </div>
+
+              <div>
+                <span>
+                  Overridden
+                </span>
+                <strong>
+                  {overriddenCount}
+                </strong>
+              </div>
+
+              <div>
+                <span>
+                  Final Status
+                </span>
+                <strong>
+                  TRAINER REVIEW COMPLETE
+                </strong>
+              </div>
+
+            </div>
+
+            <div className="record-note">
+              <strong>
+                Human-in-the-loop safeguard:
+              </strong>{' '}
+              This record reflects trainer-reviewed
+              decisions. Computer vision provides candidate
+              evidence but does not independently certify
+              learner competency.
+            </div>
 
           </section>
         )}
