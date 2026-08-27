@@ -262,3 +262,260 @@ input {
     flex-wrap: wrap;
   }
 }
+
+/* Evidence Timeline */
+
+.evidence-timeline {
+  margin-top: 20px;
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 14px;
+}
+
+.evidence-card {
+  padding: 16px;
+  background: #fcfcfd;
+  border: 1px solid #eaecf0;
+  border-radius: 12px;
+}
+
+.evidence-card:hover {
+  border-color: #f97066;
+  box-shadow: 0 4px 12px rgba(16, 24, 40, 0.06);
+}
+
+.evidence-top {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.evidence-top p {
+  margin: 4px 0 0;
+  color: #667085;
+  font-size: 12px;
+}
+
+.evidence-details {
+  margin-top: 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  color: #475467;
+  font-size: 12px;
+}
+
+.video-metadata {
+  margin: 12px 0;
+  padding-top: 10px;
+  border-top: 1px solid #abefc6;
+}
+
+.error-message {
+  margin-top: 18px;
+  padding: 16px;
+  color: #b42318;
+  background: #fef3f2;
+  border: 1px solid #fecdca;
+  border-radius: 10px;
+}
+
+.error-message p {
+  margin: 5px 0 0;
+}
+
+@media (max-width: 1000px) {
+  .evidence-timeline {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 600px) {
+  .evidence-timeline {
+    grid-template-columns: 1fr;
+  }
+}
+/* Trainer Verification Dashboard */
+
+.trainer-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 20px;
+  margin-bottom: 22px;
+}
+
+.trainer-header h3 {
+  margin: 0;
+}
+
+.review-progress {
+  padding: 8px 14px;
+  color: #344054;
+  background: #f2f4f7;
+  border-radius: 20px;
+  font-size: 13px;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.trainer-review-list {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.trainer-review-card {
+  padding: 20px;
+  background: #fcfcfd;
+  border: 1px solid #eaecf0;
+  border-radius: 13px;
+}
+
+.trainer-criterion {
+  display: flex;
+  align-items: flex-start;
+  gap: 14px;
+}
+
+.trainer-criterion h4 {
+  margin: 2px 0 6px;
+  font-size: 16px;
+}
+
+.trainer-criterion p {
+  margin: 0;
+  color: #667085;
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+.candidate-moments {
+  margin-top: 16px;
+  color: #475467;
+  font-size: 12px;
+}
+
+.timestamp-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 9px;
+}
+
+.timestamp-chip {
+  padding: 6px 10px;
+  color: #344054;
+  background: #f2f4f7;
+  border: 1px solid #e4e7ec;
+  border-radius: 16px;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.trainer-actions {
+  display: flex;
+  gap: 10px;
+  margin-top: 18px;
+}
+
+.btn-confirm,
+.btn-override {
+  padding: 9px 16px;
+  border-radius: 8px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: 0.2s ease;
+}
+
+.btn-confirm {
+  color: #027a48;
+  background: #ecfdf3;
+  border: 1px solid #abefc6;
+}
+
+.btn-confirm:hover,
+.btn-confirm.active {
+  color: white;
+  background: #039855;
+  border-color: #039855;
+}
+
+.btn-override {
+  color: #b42318;
+  background: #fef3f2;
+  border: 1px solid #fecdca;
+}
+
+.btn-override:hover,
+.btn-override.active {
+  color: white;
+  background: #d92d20;
+  border-color: #d92d20;
+}
+
+.decision-result {
+  margin-top: 14px;
+  padding: 10px 12px;
+  border-radius: 8px;
+  font-size: 12px;
+}
+
+.decision-result.confirmed {
+  color: #027a48;
+  background: #ecfdf3;
+}
+
+.decision-result.overridden {
+  color: #b42318;
+  background: #fef3f2;
+}
+
+.status-confirmed {
+  color: #027a48;
+  background: #ecfdf3;
+}
+
+.status-overridden {
+  color: #b42318;
+  background: #fef3f2;
+}
+
+.status-pending {
+  color: #344054;
+  background: #f2f4f7;
+}
+
+.verification-complete {
+  margin-top: 24px;
+  padding: 22px;
+  text-align: center;
+  color: #05603a;
+  background: #ecfdf3;
+  border: 1px solid #abefc6;
+  border-radius: 12px;
+}
+
+.verification-complete h3 {
+  margin: 0 0 8px;
+}
+
+.verification-complete p {
+  margin: 5px 0;
+}
+
+@media (max-width: 650px) {
+  .trainer-header {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .trainer-actions {
+    flex-direction: column;
+  }
+
+  .btn-confirm,
+  .btn-override {
+    width: 100%;
+  }
+}

@@ -4,13 +4,35 @@ from uuid import uuid4
 from fastapi import FastAPI, File, HTTPException, UploadFile
 from fastapi.middleware.cors import CORSMiddleware
 
+from evidence_engine import create_review_evidence, load_rubric
 from video_processor import analyze_video_metadata
+
+
+BASE_DIR = Path(__file__).resolve().parent
+PROJECT_ROOT = BASE_DIR.parent
+
+UPLOAD_DIR = BASE_DIR / "uploads"
+EVIDENCE_DIR = BASE_DIR / "evidence"
+RUBRIC_PATH = PROJECT_ROOT / "data" / "sample_rubric.json"
+
+UPLOAD_DIR.mkdir(
+    parents=True,
+    exist_ok=True
+)
+
+EVIDENCE_DIR.mkdir(
+    parents=True,
+    exist_ok=True
+)
 
 
 app = FastAPI(
     title="SkillProof AI API",
-    description="Backend API for evidence-linked practical skill assessment.",
-    version="0.4.0",
+    description=(
+        "Backend API for evidence-linked "
+        "practical skill assessment."
+    ),
+    version="0.5.0",
 )
 
 
@@ -26,22 +48,6 @@ app.add_middleware(
 )
 
 
-# Folder used to store uploaded learner videos.
-UPLOAD_DIR = Path("uploads")
-UPLOAD_DIR.mkdir(
-    parents=True,
-    exist_ok=True
-)
-
-
-# Folder used to store timestamped evidence frames.
-EVIDENCE_DIR = Path("evidence")
-EVIDENCE_DIR.mkdir(
-    parents=True,
-    exist_ok=True
-)
-
-
 ALLOWED_VIDEO_TYPES = {
     "video/mp4",
     "video/webm",
@@ -54,7 +60,7 @@ def root():
     return {
         "app": "SkillProof AI",
         "status": "running",
-        "version": "0.4.0",
+        "version": "0.5.0",
         "message": "Backend API is working",
     }
 
@@ -66,11 +72,27 @@ def health_check():
     }
 
 
+@app.get("/rubric")
+def get_rubric():
+    try:
+        return load_rubric(
+            RUBRIC_PATH
+        )
+
+    except (
+        ValueError,
+        OSError
+    ) as error:
+        raise HTTPException(
+            status_code=500,
+            detail=str(error),
+        )
+
+
 @app.post("/upload")
 async def upload_video(
     video: UploadFile = File(...)
 ):
-    # Validate MIME type.
     if video.content_type not in ALLOWED_VIDEO_TYPES:
         raise HTTPException(
             status_code=400,
@@ -80,7 +102,6 @@ async def upload_video(
             ),
         )
 
-    # Validate file extension.
     extension = Path(
         video.filename or "video.mp4"
     ).suffix.lower()
@@ -95,7 +116,6 @@ async def upload_video(
             detail="Invalid video file extension.",
         )
 
-    # Generate a unique SkillProof assessment ID.
     assessment_id = (
         f"SP-{uuid4().hex[:8].upper()}"
     )
@@ -108,7 +128,6 @@ async def upload_video(
         UPLOAD_DIR / stored_filename
     )
 
-    # Save uploaded video.
     try:
         with destination.open(
             "wb"
@@ -122,7 +141,6 @@ async def upload_video(
     finally:
         await video.close()
 
-    # Process video using OpenCV.
     try:
         video_metadata = analyze_video_metadata(
             destination,
@@ -130,8 +148,23 @@ async def upload_video(
             assessment_id
         )
 
-    except ValueError as error:
-        # Remove invalid video if processing fails.
+        rubric = load_rubric(
+            RUBRIC_PATH
+        )
+
+        review_evidence = create_review_evidence(
+            rubric,
+            video_metadata.get(
+                "evidence_frames",
+                []
+            )
+        )
+
+    except (
+        ValueError,
+        OSError
+    ) as error:
+
         if destination.exists():
             destination.unlink()
 
@@ -142,20 +175,41 @@ async def upload_video(
 
     return {
         "success": True,
-        "assessment_id": assessment_id,
-        "original_filename": video.filename,
-        "stored_filename": stored_filename,
-        "content_type": video.content_type,
-        "processing_status": "evidence_frames_extracted",
-        "video_metadata": video_metadata,
-        "evidence_frame_count": len(
+
+        "assessment_id":
+            assessment_id,
+
+        "task_id":
+            rubric.get("task_id"),
+
+        "task":
+            rubric.get("task"),
+
+        "original_filename":
+            video.filename,
+
+        "stored_filename":
+            stored_filename,
+
+        "content_type":
+            video.content_type,
+
+        "processing_status":
+            "trainer_review_ready",
+
+        "analysis_method":
             video_metadata.get(
-                "evidence_frames",
-                []
-            )
-        ),
+                "analysis_method"
+            ),
+
+        "video_metadata":
+            video_metadata,
+
+        "review_evidence":
+            review_evidence,
+
         "message": (
-            "Video uploaded, processed, and "
-            "timestamped evidence frames extracted successfully."
+            "Video processed and candidate evidence "
+            "prepared for trainer review."
         ),
     }
