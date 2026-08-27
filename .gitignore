@@ -1,0 +1,7 @@
+# YOLO test artifacts
+runs/
+*.pt
+
+# OS files
+.DS_Store
+Thumbs.db

@@ -1,12 +1,12 @@
 from pathlib import Path
 
 import cv2
+import numpy as np
 
 
 def format_timestamp(seconds: float) -> str:
     minutes = int(seconds // 60)
     remaining_seconds = int(seconds % 60)
-
     return f"{minutes:02d}:{remaining_seconds:02d}"
 
 
@@ -16,8 +16,16 @@ def analyze_video_metadata(
     assessment_id: str
 ) -> dict:
     """
-    Read an uploaded video with OpenCV, calculate real metadata,
-    and extract timestamped frames for later evidence analysis.
+    Process an uploaded video using OpenCV.
+
+    The MVP:
+    - extracts real video metadata
+    - measures visual change over time
+    - identifies high-activity candidate moments
+    - saves timestamped evidence frames
+
+    Activity moments are candidates for trainer review.
+    They are not treated as automatic proof of a rubric criterion.
     """
 
     capture = cv2.VideoCapture(str(video_path))
@@ -40,7 +48,6 @@ def analyze_video_metadata(
 
     if fps <= 0:
         capture.release()
-
         raise ValueError(
             "Could not determine video FPS."
         )
@@ -52,21 +59,121 @@ def analyze_video_metadata(
         exist_ok=True
     )
 
-    sample_percentages = [
-        0.1,
-        0.3,
-        0.5,
-        0.7,
-        0.9
-    ]
+    # Analyze approximately two frames per second.
+    sample_interval = max(
+        int(fps / 2),
+        1
+    )
+
+    previous_gray = None
+    activity_samples = []
+
+    frame_index = 0
+
+    while True:
+        success, frame = capture.read()
+
+        if not success:
+            break
+
+        if frame_index % sample_interval == 0:
+            resized = cv2.resize(
+                frame,
+                (320, 180)
+            )
+
+            gray = cv2.cvtColor(
+                resized,
+                cv2.COLOR_BGR2GRAY
+            )
+
+            gray = cv2.GaussianBlur(
+                gray,
+                (5, 5),
+                0
+            )
+
+            if previous_gray is not None:
+                difference = cv2.absdiff(
+                    previous_gray,
+                    gray
+                )
+
+                activity_score = float(
+                    np.mean(difference)
+                )
+
+                timestamp_seconds = (
+                    frame_index / fps
+                )
+
+                activity_samples.append(
+                    {
+                        "timestamp_seconds":
+                            round(timestamp_seconds, 2),
+                        "activity_score":
+                            round(activity_score, 2)
+                    }
+                )
+
+            previous_gray = gray
+
+        frame_index += 1
+
+    capture.release()
+
+    # Rank moments by measured visual activity.
+    ranked_samples = sorted(
+        activity_samples,
+        key=lambda item: item["activity_score"],
+        reverse=True
+    )
+
+    selected_moments = []
+
+    # Keep moments separated so we don't select
+    # several frames from the same movement.
+    minimum_gap_seconds = 2.0
+
+    for sample in ranked_samples:
+        timestamp = sample[
+            "timestamp_seconds"
+        ]
+
+        too_close = any(
+            abs(
+                timestamp -
+                selected["timestamp_seconds"]
+            ) < minimum_gap_seconds
+            for selected in selected_moments
+        )
+
+        if not too_close:
+            selected_moments.append(sample)
+
+        if len(selected_moments) == 5:
+            break
+
+    # Put selected moments back into chronological order.
+    selected_moments.sort(
+        key=lambda item:
+            item["timestamp_seconds"]
+    )
 
     evidence_frames = []
 
-    for index, percentage in enumerate(
-        sample_percentages,
+    # Reopen video for exact evidence-frame extraction.
+    capture = cv2.VideoCapture(
+        str(video_path)
+    )
+
+    for index, moment in enumerate(
+        selected_moments,
         start=1
     ):
-        timestamp_seconds = duration_seconds * percentage
+        timestamp_seconds = moment[
+            "timestamp_seconds"
+        ]
 
         capture.set(
             cv2.CAP_PROP_POS_MSEC,
@@ -79,10 +186,12 @@ def analyze_video_metadata(
             continue
 
         frame_filename = (
-            f"{assessment_id}_frame_{index}.jpg"
+            f"{assessment_id}_activity_{index}.jpg"
         )
 
-        frame_path = evidence_dir / frame_filename
+        frame_path = (
+            evidence_dir / frame_filename
+        )
 
         saved = cv2.imwrite(
             str(frame_path),
@@ -94,15 +203,21 @@ def analyze_video_metadata(
 
         evidence_frames.append(
             {
-                "frame_id": f"F{index}",
-                "timestamp_seconds": round(
+                "evidence_id": f"E{index}",
+                "timestamp":
+                    format_timestamp(
+                        timestamp_seconds
+                    ),
+                "timestamp_seconds":
                     timestamp_seconds,
-                    2
-                ),
-                "timestamp": format_timestamp(
-                    timestamp_seconds
-                ),
-                "filename": frame_filename
+                "activity_score":
+                    moment["activity_score"],
+                "filename":
+                    frame_filename,
+                "type":
+                    "high_activity_candidate",
+                "review_status":
+                    "trainer_review_required"
             }
         )
 
@@ -111,17 +226,14 @@ def analyze_video_metadata(
     return {
         "fps": round(fps, 2),
         "frame_count": frame_count,
-        "duration_seconds": round(
-            duration_seconds,
-            2
-        ),
+        "duration_seconds":
+            round(duration_seconds, 2),
         "resolution": {
             "width": width,
             "height": height
         },
-        "sample_timestamps": [
-            frame["timestamp_seconds"]
-            for frame in evidence_frames
-        ],
-        "evidence_frames": evidence_frames
+        "analysis_method":
+            "opencv_visual_activity_detection",
+        "evidence_frames":
+            evidence_frames
     }
