@@ -6,13 +6,21 @@ SkillProof AI is an AI-assisted platform designed to make practical vocational s
 
 Instead of returning only a final score, SkillProof AI processes a learner's practical-task video, identifies candidate moments of visual activity, links those moments to a predefined competency rubric for review, and allows a trainer to make the final assessment decision.
 
-> **Core Principle: AI flags. Human verifies.**
+Core Principle: AI flags. Human verifies.
 
 SkillProof AI assists the assessor with evidence. It does not independently certify learner competency.
 
 ---
 
-## Problem Statement
+# Live Demo
+
+- Frontend: https://skillproof-frontend-vokk.onrender.com
+- Backend API: https://skillproof-backend-jositha.onrender.com
+- API Docs (Swagger): https://skillproof-backend-jositha.onrender.com/docs
+
+---
+
+# Problem Statement
 
 Practical vocational skills are often assessed through direct manual observation.
 
@@ -28,7 +36,7 @@ SkillProof AI explores an evidence-first assessment workflow where computer visi
 
 ---
 
-## Proposed Solution
+# Proposed Solution
 
 A learner records a predefined practical task using a smartphone camera and uploads the performance video to SkillProof AI.
 
@@ -52,7 +60,7 @@ The current prototype:
 
 The hackathon MVP focuses on one controlled practical task:
 
-**Basic Package Preparation and Sealing Procedure**
+Basic Package Preparation and Sealing Procedure
 
 This task provides a simple, observable, multi-step workflow that can be recorded using a standard smartphone without specialized equipment.
 
@@ -65,7 +73,7 @@ This task provides a simple, observable, multi-step workflow that can be recorde
 
 ---
 
-## Expected Procedure
+# Expected Procedure
 
 The learner performs the following predefined procedure:
 
@@ -103,13 +111,12 @@ The learner applies sealing material to complete the package.
 
 The machine-readable rubric is stored at:
 
-`data/sample_rubric.json`
+data/sample_rubric.json
 
 ---
 
 # Current Prototype Workflow
 
-```text
 Learner Selects Task
         ↓
 Uploads Performance Video
@@ -133,7 +140,6 @@ Trainer Verification Dashboard
 Confirm / Override
         ↓
 Verified Assessment Record
-```
 
 ---
 
@@ -203,21 +209,19 @@ Verified Assessment Record
 
 The current MVP uses:
 
-**OpenCV Visual Activity Detection**
+## OpenCV Visual Activity Detection
 
 The system analyzes changes between sampled video frames and identifies moments with relatively high visual activity.
 
 For example:
 
-```text
 E1 → Timestamp 00:01 → Activity Score
 E2 → Timestamp 00:05 → Activity Score
 E3 → Timestamp 00:07 → Activity Score
 E4 → Timestamp 00:09 → Activity Score
 E5 → Timestamp 00:14 → Activity Score
-```
 
-These moments are provided to the trainer as **candidate evidence**.
+These moments are provided to the trainer as candidate evidence.
 
 An activity score represents measured visual change in the video. It is not treated as a probability that a competency was successfully demonstrated.
 
@@ -227,7 +231,6 @@ An activity score represents measured visual change in the video. It is not trea
 
 The current prototype deliberately does not treat computer-vision output as final certification.
 
-```text
 Computer Vision
       ↓
 Candidate Evidence
@@ -239,7 +242,6 @@ Trainer
 Confirm / Override
       ↓
 Verified Assessment Record
-```
 
 The trainer remains responsible for the final assessment decision.
 
@@ -249,7 +251,7 @@ The trainer remains responsible for the final assessment decision.
 
 The current OpenCV activity detector identifies moments of visual activity.
 
-It does **not yet semantically recognize each packaging action** such as:
+It does not yet semantically recognize each packaging action such as:
 
 - "The item was correctly placed"
 - "The package was correctly closed"
@@ -263,10 +265,10 @@ Advanced action and sequence recognition is part of the future roadmap.
 
 # Example Prototype Output
 
-```text
 Assessment ID: SP-XXXXXXXX
 
 CV Candidate Evidence
+
 E1 → 00:01
 E2 → 00:05
 E3 → 00:07
@@ -292,13 +294,11 @@ Decision: CONFIRMED
 
 Final Status:
 TRAINER REVIEW COMPLETE
-```
 
 ---
 
 # Technical Architecture
 
-```text
 React Frontend
       ↓
 FastAPI Backend
@@ -320,7 +320,6 @@ Trainer Verification Dashboard
 Confirm / Override
       ↓
 Verified Assessment Record
-```
 
 ---
 
@@ -357,7 +356,6 @@ Pretrained object-detection approaches were explored during development. The cur
 
 # Project Structure
 
-```text
 ominkonSkillproofAI/
 │
 ├── backend/
@@ -382,7 +380,6 @@ ominkonSkillproofAI/
 │
 ├── .gitignore
 └── README.md
-```
 
 Generated videos and evidence images are intentionally excluded from the public Git repository.
 
@@ -413,7 +410,7 @@ Generated videos and evidence images are intentionally excluded from the public 
 
 ## Partially Implemented
 
-- Rubric-to-evidence mapping
+### Rubric-to-evidence mapping
 
 The current system presents CV-generated candidate moments against the rubric for human review. Automatic semantic mapping of a detected action to a specific competency is not yet implemented.
 
@@ -474,25 +471,25 @@ Controlled recording conditions include:
 
 Generic pretrained object detection does not automatically understand procedural packaging actions.
 
-**Current approach:** Use OpenCV to identify candidate activity moments and keep the trainer responsible for semantic interpretation.
+Current approach: Use OpenCV to identify candidate activity moments and keep the trainer responsible for semantic interpretation.
 
 ## Limited Task-Specific Dataset
 
 A large labelled packaging-action dataset is not currently available.
 
-**Current approach:** Validate the complete workflow using controlled team-recorded sample videos.
+Current approach: Validate the complete workflow using controlled team-recorded sample videos.
 
 ## Camera Variation
 
 Motion and visual-change measurements can vary with camera movement.
 
-**Current approach:** Use a stationary-camera setup for the MVP.
+Current approach: Use a stationary-camera setup for the MVP.
 
 ## AI Misclassification
 
 Automatic observations can be incorrect.
 
-**Current approach:** Candidate evidence is never treated as final certification without trainer review.
+Current approach: Candidate evidence is never treated as final certification without trainer review.
 
 ---
 
@@ -518,7 +515,7 @@ Automatic observations can be incorrect.
 
 ## Long-Term Vision
 
-Trainer-verified practical assessments could contribute to a structured **Digital Skill Passport** containing evidence of demonstrated practical competencies.
+Trainer-verified practical assessments could contribute to a structured Digital Skill Passport containing evidence of demonstrated practical competencies.
 
 ---
 
@@ -526,18 +523,14 @@ Trainer-verified practical assessments could contribute to a structured **Digita
 
 Traditional assessment often ends with:
 
-```text
 Student Score: 8/10
-```
 
 SkillProof AI aims to support outcomes such as:
 
-```text
 Criterion: Package Closure
 Candidate Evidence: 00:09
 Source: CV-identified activity moment
 Trainer Decision: CONFIRMED / OVERRIDDEN
-```
 
 The goal is not to replace the assessor.
 
@@ -547,7 +540,7 @@ The goal is to give the assessor better evidence.
 
 # Vision
 
-**Practical skill assessment should show evidence, not just a score.**
+Practical skill assessment should show evidence, not just a score.
 
 SkillProof AI explores how computer vision, structured competency rubrics, and human verification can work together to create more traceable practical-skill assessment.
 
@@ -555,19 +548,17 @@ SkillProof AI explores how computer vision, structured competency rubrics, and h
 
 # Team
 
-## Team SkillForge
+Team SkillForge
 
 - Jositha Chowdary
 - Sindhuja Sai
 
----
-
 # Hackathon
 
-**OMNIKON National Hackathon 2026**
+OMNIKON National Hackathon 2026
 
-**Problem ID:** Omni_EdTech_3
+Problem ID: Omni_EdTech_3
 
-**Theme:** EdTech & Skill Development
+Theme: EdTech & Skill Development
 
-**Project:** SkillProof AI
+Project: SkillProof AI
