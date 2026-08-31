@@ -1,7 +1,31 @@
-# YOLO test artifacts
-runs/
-*.pt
-
-# OS files
+# ---- OS files ----
 .DS_Store
 Thumbs.db
+
+# ---- Editor ----
+.vscode/
+.idea/
+
+# ---- Python ----
+__pycache__/
+*.py[cod]
+venv/
+.venv/
+
+# ---- Env files ----
+.env
+.env.*
+
+# ---- Frontend (Vite/React) ----
+frontend/node_modules/
+frontend/dist/
+
+# ---- Backend runtime artifacts (do NOT commit) ----
+backend/uploads/
+backend/evidence/
+backend/*.db
+backend/skillproof.db
+
+# ---- YOLO / test artifacts ----
+runs/
+*.pt

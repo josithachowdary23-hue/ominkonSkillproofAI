@@ -1,7 +1,11 @@
-venv/
 __pycache__/
-*.pyc
+*.py[cod]
+venv/
+.venv/
+
 .env
+.env.*
+
 uploads/
 evidence/
 *.db
