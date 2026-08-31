@@ -1,7 +1,8 @@
 from pathlib import Path
 from uuid import uuid4
+import os
 
-from fastapi import FastAPI, File, HTTPException, UploadFile
+from fastapi import FastAPI, File, HTTPException, UploadFile, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel, Field
@@ -39,16 +40,74 @@ app = FastAPI(
 
 initialize_database()
 
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=[
+
+def _normalize_origin(origin: str) -> str:
+    return (origin or "").strip().rstrip("/")
+
+
+def get_cors_origins() -> list[str]:
+    raw = os.getenv("CORS_ORIGINS", "")
+    raw = raw.strip()
+
+    # allow all
+    if raw == "*":
+        return ["*"]
+
+    if raw:
+        return [
+            _normalize_origin(o)
+            for o in raw.split(",")
+            if _normalize_origin(o)
+        ]
+
+    # Local dev fallback (Vite default)
+    return [
         "http://localhost:5173",
         "http://127.0.0.1:5173",
-    ],
-    allow_credentials=True,
+    ]
+
+
+def get_cors_origin_regex() -> str | None:
+    """
+    Safety net so Render Static Site domains work even if CORS_ORIGINS
+    isn't set correctly.
+
+    Override in Render env if you want:
+      CORS_ORIGIN_REGEX=DISABLE
+    or set your own regex.
+    """
+    raw = os.getenv("CORS_ORIGIN_REGEX", r"^https://.*\.onrender\.com$")
+    raw = (raw or "").strip()
+
+    if raw.lower() in {"", "none", "false", "disable"}:
+        return None
+
+    return raw
+
+
+CORS_ORIGINS = get_cors_origins()
+CORS_ORIGIN_REGEX = get_cors_origin_regex()
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=CORS_ORIGINS,
+    allow_origin_regex=CORS_ORIGIN_REGEX,
+    allow_credentials=False,
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+
+# Debug endpoint (helps confirm what the backend thinks CORS is)
+@app.get("/debug/cors")
+def debug_cors(request: Request):
+    return {
+        "Origin_header": request.headers.get("origin"),
+        "CORS_ORIGINS_env": os.getenv("CORS_ORIGINS"),
+        "CORS_ORIGIN_REGEX_env": os.getenv("CORS_ORIGIN_REGEX"),
+        "effective_allow_origins": CORS_ORIGINS,
+        "effective_allow_origin_regex": CORS_ORIGIN_REGEX,
+    }
 
 
 ALLOWED_VIDEO_TYPES = {
@@ -73,24 +132,18 @@ VALID_DECISIONS = {
 
 class TrainerReviewRequest(BaseModel):
     trainer_decisions: dict[str, str]
-    trainer_notes: dict[str, str] = Field(
-        default_factory=dict
-    )
+    trainer_notes: dict[str, str] = Field(default_factory=dict)
 
 
 def add_runtime_urls(assessment: dict) -> dict:
-    original_filename = (
-        assessment.get("original_filename") or ""
-    )
+    original_filename = assessment.get("original_filename") or ""
 
     extension = Path(original_filename).suffix.lower()
 
     if extension not in {".mp4", ".webm", ".mov"}:
         extension = ".mp4"
 
-    stored_filename = (
-        f"{assessment['assessment_id']}{extension}"
-    )
+    stored_filename = f"{assessment['assessment_id']}{extension}"
 
     assessment["stored_filename"] = stored_filename
     assessment["video_url"] = f"/videos/{stored_filename}"
@@ -103,14 +156,13 @@ def add_runtime_urls(assessment: dict) -> dict:
         if filename:
             frame["image_url"] = f"/evidence/{filename}"
 
-    assessment["sequence_analysis"] = metadata.get(
-        "sequence_analysis"
-    )
+    assessment["sequence_analysis"] = metadata.get("sequence_analysis")
 
     return assessment
 
 
-@app.get("/")
+# Allow HEAD too (helps some platforms health-check with HEAD /)
+@app.api_route("/", methods=["GET", "HEAD"])
 def root():
     return {
         "app": "SkillProof AI",
@@ -138,7 +190,6 @@ def health_check():
 def get_rubric():
     try:
         return load_rubric(RUBRIC_PATH)
-
     except (ValueError, OSError) as error:
         raise HTTPException(
             status_code=500,
@@ -230,18 +281,14 @@ def save_trainer_review(
 
 
 @app.post("/upload")
-async def upload_video(
-    video: UploadFile = File(...)
-):
+async def upload_video(video: UploadFile = File(...)):
     if video.content_type not in ALLOWED_VIDEO_TYPES:
         raise HTTPException(
             status_code=400,
             detail="Please upload MP4, WebM, or MOV.",
         )
 
-    extension = Path(
-        video.filename or "video.mp4"
-    ).suffix.lower()
+    extension = Path(video.filename or "video.mp4").suffix.lower()
 
     if extension not in {".mp4", ".webm", ".mov"}:
         raise HTTPException(
@@ -274,24 +321,15 @@ async def upload_video(
             video_metadata.get("evidence_frames", []),
         )
 
-        sequence_analysis = analyze_sequence(
-            review_evidence
-        )
+        sequence_analysis = analyze_sequence(review_evidence)
 
-        video_metadata["sequence_analysis"] = (
-            sequence_analysis
-        )
+        video_metadata["sequence_analysis"] = sequence_analysis
 
-        for frame in video_metadata.get(
-            "evidence_frames",
-            []
-        ):
+        for frame in video_metadata.get("evidence_frames", []):
             filename = frame.get("filename")
 
             if filename:
-                frame["image_url"] = (
-                    f"/evidence/{filename}"
-                )
+                frame["image_url"] = f"/evidence/{filename}"
 
         create_assessment(
             assessment_id=assessment_id,
