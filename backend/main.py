@@ -2,7 +2,7 @@ from pathlib import Path
 from uuid import uuid4
 import os
 
-from fastapi import FastAPI, File, HTTPException, UploadFile, Request
+from fastapi import FastAPI, File, HTTPException, UploadFile
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel, Field
@@ -49,7 +49,6 @@ def get_cors_origins() -> list[str]:
     raw = os.getenv("CORS_ORIGINS", "")
     raw = raw.strip()
 
-    # allow all
     if raw == "*":
         return ["*"]
 
@@ -60,7 +59,6 @@ def get_cors_origins() -> list[str]:
             if _normalize_origin(o)
         ]
 
-    # Local dev fallback (Vite default)
     return [
         "http://localhost:5173",
         "http://127.0.0.1:5173",
@@ -68,14 +66,6 @@ def get_cors_origins() -> list[str]:
 
 
 def get_cors_origin_regex() -> str | None:
-    """
-    Safety net so Render Static Site domains work even if CORS_ORIGINS
-    isn't set correctly.
-
-    Override in Render env if you want:
-      CORS_ORIGIN_REGEX=DISABLE
-    or set your own regex.
-    """
     raw = os.getenv("CORS_ORIGIN_REGEX", r"^https://.*\.onrender\.com$")
     raw = (raw or "").strip()
 
@@ -96,18 +86,6 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
-
-
-# Debug endpoint (helps confirm what the backend thinks CORS is)
-@app.get("/debug/cors")
-def debug_cors(request: Request):
-    return {
-        "Origin_header": request.headers.get("origin"),
-        "CORS_ORIGINS_env": os.getenv("CORS_ORIGINS"),
-        "CORS_ORIGIN_REGEX_env": os.getenv("CORS_ORIGIN_REGEX"),
-        "effective_allow_origins": CORS_ORIGINS,
-        "effective_allow_origin_regex": CORS_ORIGIN_REGEX,
-    }
 
 
 ALLOWED_VIDEO_TYPES = {
@@ -137,7 +115,6 @@ class TrainerReviewRequest(BaseModel):
 
 def add_runtime_urls(assessment: dict) -> dict:
     original_filename = assessment.get("original_filename") or ""
-
     extension = Path(original_filename).suffix.lower()
 
     if extension not in {".mp4", ".webm", ".mov"}:
@@ -152,7 +129,6 @@ def add_runtime_urls(assessment: dict) -> dict:
 
     for frame in metadata.get("evidence_frames", []):
         filename = frame.get("filename")
-
         if filename:
             frame["image_url"] = f"/evidence/{filename}"
 
@@ -161,7 +137,6 @@ def add_runtime_urls(assessment: dict) -> dict:
     return assessment
 
 
-# Allow HEAD too (helps some platforms health-check with HEAD /)
 @app.api_route("/", methods=["GET", "HEAD"])
 def root():
     return {
@@ -322,12 +297,10 @@ async def upload_video(video: UploadFile = File(...)):
         )
 
         sequence_analysis = analyze_sequence(review_evidence)
-
         video_metadata["sequence_analysis"] = sequence_analysis
 
         for frame in video_metadata.get("evidence_frames", []):
             filename = frame.get("filename")
-
             if filename:
                 frame["image_url"] = f"/evidence/{filename}"
 
